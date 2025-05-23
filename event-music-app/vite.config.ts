@@ -11,5 +11,13 @@ export default defineConfig({
     headers: {
       'Access-Control-Allow-Origin': '*',
     },
+    proxy: {
+      '/api': {
+        target: 'https://kpop-events.uk',
+        changeOrigin: true,
+        secure: false,
+        rewrite: (path) => path.replace(/^\/api/, '/api')
+      }
+    }
   },
 })

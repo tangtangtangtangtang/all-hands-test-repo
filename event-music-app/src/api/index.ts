@@ -2,7 +2,8 @@ import axios from 'axios'
 
 // Create axios instance
 const api = axios.create({
-  baseURL: '/api',
+  // 在开发环境中使用代理，在生产环境中使用完整 URL
+  baseURL: import.meta.env.DEV ? '/api' : 'https://kpop-events.uk/api',
   timeout: 10000
 })
 
@@ -57,11 +58,11 @@ api.interceptors.response.use(
 // Auth API
 export const authAPI = {
   login: (username: string, password: string) => {
-    return api.post('/auth/login', { username, password })
+    return api.post('/organizer/login', { username, password })
   },
   
   logout: () => {
-    return api.post('/auth/logout')
+    return api.post('/organizer/logout')
   }
 }
 

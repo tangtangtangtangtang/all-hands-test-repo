@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia'
+import { authAPI } from '../api'
 
 interface User {
   username: string
@@ -8,29 +9,45 @@ interface User {
 export const useAuthStore = defineStore('auth', {
   state: () => ({
     user: null as User | null,
-    isAuthenticated: false
+    isAuthenticated: false,
+    loading: false,
+    error: null as string | null
   }),
   
   actions: {
-    login(username: string, password: string) {
-      // In a real app, you would make an API call here
-      // For this demo, we'll just simulate a successful login
-      if (username && password) {
-        const user = {
-          username,
-          token: 'demo-token-' + Math.random().toString(36).substring(2)
+    async login(username: string, password: string) {
+      this.loading = true
+      this.error = null
+      
+      try {
+        // Call the login API
+        const response = await authAPI.login(username, password)
+        
+        // Check if login was successful (status 200)
+        if (response && response.status === 200) {
+          // Create user object from response
+          const user = {
+            username: username,
+            token: response.token || 'demo-token-' + Math.random().toString(36).substring(2)
+          }
+          
+          this.user = user
+          this.isAuthenticated = true
+          
+          // Store authentication state in localStorage for persistence
+          localStorage.setItem('user', JSON.stringify(user))
+          localStorage.setItem('isAuthenticated', 'true')
+          
+          this.loading = false
+          return true
+        } else {
+          throw new Error('Login failed')
         }
-        
-        this.user = user
-        this.isAuthenticated = true
-        
-        // Store authentication state in localStorage for persistence
-        localStorage.setItem('user', JSON.stringify(user))
-        localStorage.setItem('isAuthenticated', 'true')
-        
-        return true
+      } catch (error) {
+        this.error = error instanceof Error ? error.message : 'Login failed'
+        this.loading = false
+        return false
       }
-      return false
     },
     
     logout() {
